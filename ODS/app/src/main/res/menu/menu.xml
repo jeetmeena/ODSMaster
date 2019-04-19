@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/enable_direct"
+        android:title="EnableDirect WiFiP2P" />
+
+    <item android:id="@+id/discover_peers"
+        android:title="Discover Peers">
+
+    </item>
+    <item android:title="ClientSocket"
+        android:id="@+id/client_socket"
+        ></item>
+
+</menu>
