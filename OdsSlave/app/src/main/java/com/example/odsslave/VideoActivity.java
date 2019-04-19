@@ -247,6 +247,7 @@ public class VideoActivity extends AppCompatActivity {
             }
         });
 
+
         }
 
     public static   VideoActivity getInstance(){
@@ -402,7 +403,7 @@ public class VideoActivity extends AppCompatActivity {
         }
     }
 
-    private void moveToNext(){
+    public void moveToNext(){
         exoPlayer.release();
         exoPlayer = null;
         playbackPosition=0;
@@ -422,7 +423,7 @@ public class VideoActivity extends AppCompatActivity {
         //   file_path=videoArrayListi.get(current_position+1).getVideoFilePath();
         initializePlayer();
     }
-    private void moveTOPreivi(){
+    public void moveTOPreivi(){
         exoPlayer.release();
         exoPlayer = null;
         playbackPosition=0;
@@ -537,6 +538,16 @@ public class VideoActivity extends AppCompatActivity {
         }
 
         super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    public void play() {
+        exoPlayer.setPlayWhenReady(true);
+
+    }
+
+    public void pause() {
+        exoPlayer.setPlayWhenReady(false);
+
     }
 
     private class ComponentListener extends Player.DefaultEventListener {

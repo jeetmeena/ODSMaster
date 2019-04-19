@@ -440,16 +440,16 @@ public class MainActivity extends AppCompatActivity implements WifiP2pManager.Ac
                             }catch (Exception e){}
                             break;
                         case 3: // Type C
-                            Toast.makeText(mainActivity, "Message C: " + dIn.readUTF(), Toast.LENGTH_SHORT).show();
-                            System.out.println("Message C [2]: " + dIn.readUTF());
+                             videoActivity.moveTOPreivi();
                             break;
                         case 4: // Type C
-                            Toast.makeText(mainActivity, "Message C: " + dIn.readUTF(), Toast.LENGTH_SHORT).show();
-                            System.out.println("Message C [2]: " + dIn.readUTF());
+                            videoActivity.pause();
                             break;
                         case 5: // Type C
-                            Toast.makeText(mainActivity, "Message C: " + dIn.readUTF(), Toast.LENGTH_SHORT).show();
-                            System.out.println("Message C [2]: " + dIn.readUTF());
+                             videoActivity.play();
+                            break;
+                        case 6: // Type C
+                            videoActivity.moveToNext();
                             break;
                         default:
                             done = true;

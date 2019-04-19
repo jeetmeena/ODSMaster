@@ -58,6 +58,7 @@ public class MainActivity extends AppCompatActivity implements WifiP2pManager.Ac
     SeekBar seekBarVolume,seekBarBrightNess;
     Button skipToNext,play_pause,skipToPerviuse;
     String deviceAddress;
+    boolean play=false;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -69,6 +70,7 @@ public class MainActivity extends AppCompatActivity implements WifiP2pManager.Ac
         seekBarBrightNess=findViewById(R.id.bright_ness_seekbar);
         mIntentFilter = new IntentFilter();
         peers = new ArrayList<WifiP2pDevice>();
+
         mIntentFilter.addAction(WifiP2pManager.WIFI_P2P_STATE_CHANGED_ACTION);
         mIntentFilter.addAction(WifiP2pManager.WIFI_P2P_PEERS_CHANGED_ACTION);
         mIntentFilter.addAction(WifiP2pManager.WIFI_P2P_CONNECTION_CHANGED_ACTION);
@@ -225,14 +227,19 @@ public class MainActivity extends AppCompatActivity implements WifiP2pManager.Ac
                 break;
             case R.id.play_pause:
                 try {
-                    sendRequesttoserver("play",4);
+                    if(!play){
+                        sendRequesttoserver("play",4);
+                    }
+                    else {
+                        sendRequesttoserver("play",5);
+                    }
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
                 break;
             case R.id.skip_next:
                 try {
-                    sendRequesttoserver("next",5);
+                    sendRequesttoserver("next",6);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
