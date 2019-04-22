@@ -59,6 +59,7 @@ public class MainActivity extends AppCompatActivity implements WifiP2pManager.Ac
     Button skipToNext,play_pause,skipToPerviuse;
     String deviceAddress;
     boolean play=false;
+    DataOutputStream dOut;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -68,6 +69,8 @@ public class MainActivity extends AppCompatActivity implements WifiP2pManager.Ac
         textBrightNess=findViewById(R.id.text_bright_ness);
         seekBarVolume=findViewById(R.id.volume_seekbar);
         seekBarBrightNess=findViewById(R.id.bright_ness_seekbar);
+        seekBarVolume.incrementProgressBy(3);
+        seekBarBrightNess.incrementProgressBy(50);
         mIntentFilter = new IntentFilter();
         peers = new ArrayList<WifiP2pDevice>();
 
@@ -91,7 +94,7 @@ public class MainActivity extends AppCompatActivity implements WifiP2pManager.Ac
        myPeerListListener=new WifiP2pManager.PeerListListener() {
            @Override
            public void onPeersAvailable(WifiP2pDeviceList peerList) {
-               Toast.makeText(MainActivity.this, "peer"+peerList, Toast.LENGTH_SHORT).show();
+               //Toast.makeText(MainActivity.this, "peer"+peerList, Toast.LENGTH_SHORT).show();
                //wifiArray[0]="not";
                List<WifiP2pDevice> refreshedPeers =new ArrayList<> (peerList.getDeviceList());
                if (!refreshedPeers.equals(peers)) {
@@ -244,6 +247,9 @@ public class MainActivity extends AppCompatActivity implements WifiP2pManager.Ac
                     e.printStackTrace();
                 }
                 break;
+            case R.id.disconnect:
+                closeSocket();
+                break;
         }
     }
 
@@ -395,10 +401,11 @@ public class MainActivity extends AppCompatActivity implements WifiP2pManager.Ac
 
         try {
 
-            //socket.bind(null);
-            //socket.connect((new InetSocketAddress("be:d1:1F:C6:83:44", 8989)),9000);
-            Log.d("Tag", "Client: try to connect");
-            Toast.makeText(this, "connect", Toast.LENGTH_SHORT).show();
+            socket = new Socket();
+            socket.bind(null);
+            socket.connect((new InetSocketAddress("192.168.49.71", 8989)),9000);
+            Log.d("Tag", "Client:  connected");
+            Toast.makeText(this, "connected", Toast.LENGTH_SHORT).show();
         }catch (Exception e){}
 
     }    public void sendRequesttoserver(String req,int bytesSize) throws IOException {
@@ -408,22 +415,19 @@ public class MainActivity extends AppCompatActivity implements WifiP2pManager.Ac
 
             StrictMode.setThreadPolicy(policy);
         }
-        Log.d("Tag", "Opening client socket - ");
-        socket = new Socket();
-        socket.bind(null);
-        socket.connect((new InetSocketAddress("198.168.0.110", 8989)),9000);
-        DataOutputStream dOut = new DataOutputStream(socket.getOutputStream());
+        Log.e("Tag", "Opening client socket - ");
+
+        dOut = new DataOutputStream(socket.getOutputStream());
         dOut.writeByte(bytesSize);
-        dOut.writeUTF("this is the first message");
+        dOut.writeUTF(req);
         dOut.flush();
-        dOut.close();
-        Toast.makeText(this, "send", Toast.LENGTH_SHORT).show();
 
     }
     public void closeSocket(){
             if (socket != null) {
                 if (socket.isConnected()) {
-                    try {
+                    try { dOut.close();
+                        Toast.makeText(this, "send", Toast.LENGTH_SHORT).show();
                         socket.close();
                     } catch (IOException e) {
                         //catch logic

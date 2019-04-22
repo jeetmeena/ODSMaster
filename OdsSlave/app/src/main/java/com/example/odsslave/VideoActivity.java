@@ -1,5 +1,8 @@
 package com.example.odsslave;
 
+import android.content.BroadcastReceiver;
+import android.content.IntentFilter;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 
@@ -93,6 +96,16 @@ public class VideoActivity extends AppCompatActivity {
     ImageButton exoPerv,exoNext;
     final static int FILE_SELECT=2;
     static VideoActivity videoActivity;
+    BroadcastReceiver controlBrodcasReciver=  new BroadcastReceiver()
+        {
+
+            @Override
+            public void onReceive(Context context, Intent intent)
+            {
+                // do your listener event stuff
+                Toast.makeText(VideoActivity.this, "Reseve", Toast.LENGTH_SHORT).show();
+            }
+        };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -361,6 +374,7 @@ public class VideoActivity extends AppCompatActivity {
     @Override
     public void onResume() {
         super.onResume();
+        LocalBroadcastManager.getInstance(this).registerReceiver(controlBrodcasReciver, new IntentFilter("mainActivity-initialized"));
         hideSystemUi();
         if ((Util.SDK_INT <= 23 || exoPlayer == null)) {
             initializePlayer();
@@ -391,6 +405,12 @@ public class VideoActivity extends AppCompatActivity {
         if (Util.SDK_INT > 23) {
             releasePlayer();
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(controlBrodcasReciver);
     }
 
     private void releasePlayer() {
@@ -591,4 +611,5 @@ public class VideoActivity extends AppCompatActivity {
         setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         super.onBackPressed();
     }
+
 }

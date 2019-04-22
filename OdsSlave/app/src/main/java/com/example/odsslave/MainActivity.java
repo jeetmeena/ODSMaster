@@ -13,6 +13,7 @@ import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.content.BroadcastReceiver;
@@ -26,7 +27,6 @@ import android.net.wifi.p2p.WifiP2pDevice;
 import android.net.wifi.p2p.WifiP2pDeviceList;
 import android.net.wifi.p2p.WifiP2pManager;
 import android.os.AsyncTask;
-import android.os.Environment;
 import android.provider.Settings;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
@@ -44,13 +44,15 @@ import android.widget.Toast;
 import android.widget.VideoView;
 
 import java.io.DataInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.StringReader;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 
@@ -60,7 +62,7 @@ public class MainActivity extends AppCompatActivity implements WifiP2pManager.Ac
     HashMap<Integer, Bitmap> hashMap=new HashMap<Integer, Bitmap>();
 
     private VideoView video;
-
+    public TextView serverIp;
     RecyclerView recyclerVideo;
     RecyclerView.LayoutManager layoutManager;
     WifiP2pManager mManager;
@@ -87,6 +89,8 @@ public class MainActivity extends AppCompatActivity implements WifiP2pManager.Ac
         mIntentFilter.addAction(WifiP2pManager.WIFI_P2P_THIS_DEVICE_CHANGED_ACTION);
         mManager = (WifiP2pManager) getSystemService(Context.WIFI_P2P_SERVICE);
         mainActivity=this;
+        serverIp=findViewById(R.id.server_setup);
+
         mChannel = mManager.initialize(this, getMainLooper(), null);
         recyclerVideo=findViewById(R.id.recycler_Video);
         connectionInfoListener=new WifiP2pManager.ConnectionInfoListener() {
@@ -101,7 +105,7 @@ public class MainActivity extends AppCompatActivity implements WifiP2pManager.Ac
         myPeerListListener=new WifiP2pManager.PeerListListener() {
             @Override
             public void onPeersAvailable(WifiP2pDeviceList peerList) {
-                Toast.makeText(MainActivity.this, "peer"+peerList, Toast.LENGTH_SHORT).show();
+                //Toast.makeText(MainActivity.this, "peer"+peerList, Toast.LENGTH_SHORT).show();
                 //wifiArray[0]="not";
                 List<WifiP2pDevice> refreshedPeers =new ArrayList<> (peerList.getDeviceList());
                 if (!refreshedPeers.equals(peers)) {
@@ -134,6 +138,7 @@ public class MainActivity extends AppCompatActivity implements WifiP2pManager.Ac
             }
         };
         checkStoregReadPermission();
+
     }
 
     private void checkStoregReadPermission() {
@@ -394,29 +399,31 @@ public class MainActivity extends AppCompatActivity implements WifiP2pManager.Ac
     protected void onStop() {
         super.onStop();
     }
-    public static class FileServerAsyncTask extends AsyncTask{
+    public  class FileServerAsyncTask extends AsyncTask{
 
         private Context context;
         private TextView statusText;
+        ServerSocket serverSocket=null;
         MainActivity mainActivity;
+
         VideoActivity videoActivity=VideoActivity.getInstance();
-        public FileServerAsyncTask(Context context) {
-            this.context =   context;
+        public FileServerAsyncTask(Context contextn) {
+            this.context =   contextn;
 
         }
 
         @Override
         protected String doInBackground(Object[] params) {
-                  mainActivity=MainActivity.getInstance();
 
             try {
-                ServerSocket serverSocket = new ServerSocket(8989);
-                Log.d("Tag", " Socket opened");
+                serverSocket = new ServerSocket(8989);
+                Log.e("Tag", " Socket opened");
+                Log.e("Tag",getserverIp());
                 Socket client = serverSocket.accept();
-                Log.d("Tag", "Server Connect");
+                Log.e("Tag", "Server Connect");
                 InputStream inputstream = client.getInputStream();
-                String stringReader=inputstream.toString();
-                Toast.makeText(mainActivity, ""+stringReader, Toast.LENGTH_SHORT).show();
+                //String stringReader=inputstream.toString();
+               // Toast.makeText(context, ""+stringReader, Toast.LENGTH_SHORT).show();
                 // copyFile(inputstream, new FileOutputStream(f));
                 DataInputStream dIn = new DataInputStream(client.getInputStream());
 
@@ -429,34 +436,46 @@ public class MainActivity extends AppCompatActivity implements WifiP2pManager.Ac
                     {
                         case 1: // Type
                             try {
-                                videoActivity.setVolume(Integer.getInteger(dIn.readUTF()));
+                                Intent intent=new Intent("activity-2-initialized");
+                                intent.putExtra("Volume",Integer.getInteger(dIn.readUTF()));
+                                LocalBroadcastManager.getInstance(MainActivity.this).sendBroadcast(intent                                                                                                        );
+
+                                //videoActivity.setVolume(Integer.getInteger(dIn.readUTF()));
+                                Log.e("Tag", " Volume");
 
                             }catch (Exception e){}
                             break;
                         case 2: // Type B
                             try {
-                                videoActivity.setScreenBrighNess(Integer.getInteger(dIn.readUTF()));
-
+                                //videoActivity.setScreenBrighNess(Integer.getInteger(dIn.readUTF()));
+                                Log.e("Tag", " brightNess");
                             }catch (Exception e){}
                             break;
                         case 3: // Type C
-                             videoActivity.moveTOPreivi();
+                            // videoActivity.moveTOPreivi();
+                            Log.e("Tag", " perv");
                             break;
                         case 4: // Type C
-                            videoActivity.pause();
+                            //videoActivity.pause();
+                            Log.e("Tag", " pause");
                             break;
                         case 5: // Type C
-                             videoActivity.play();
+                             //videoActivity.play();
+                            Log.e("Tag", " play");
                             break;
                         case 6: // Type C
-                            videoActivity.moveToNext();
+                            //videoActivity.moveToNext();
+                            Log.e("Tag", " next");
+                            break;
+                        case 7:
+                            done = true;
                             break;
                         default:
-                            done = true;
+
                     }
                 }
 
-                dIn.close();
+
 
                 return inputstream.toString();
             } catch (IOException e) {
@@ -468,12 +487,38 @@ public class MainActivity extends AppCompatActivity implements WifiP2pManager.Ac
         }
 
 
-        /**
-         * Start activity that can handle the JPEG image
-         */
+
 
     }
+    public String getserverIp(){
+        String ip = "";
+        try {
+            Enumeration<NetworkInterface> enumNetworkInterfaces = NetworkInterface
+                    .getNetworkInterfaces();
+            while (enumNetworkInterfaces.hasMoreElements()) {
+                NetworkInterface networkInterface = enumNetworkInterfaces
+                        .nextElement();
+                Enumeration<InetAddress> enumInetAddress = networkInterface
+                        .getInetAddresses();
+                while (enumInetAddress.hasMoreElements()) {
+                    InetAddress inetAddress = enumInetAddress
+                            .nextElement();
 
+                    if (inetAddress.isSiteLocalAddress()) {
+                        ip += "Server running at : "
+                                + inetAddress.getHostAddress();
+                    }
+                }
+            }
+
+        } catch (SocketException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            ip += "Something Wrong! " + e.toString() + "\n";
+        }
+        return ip;
+
+    }
     private void videoLoad() {
 
      if(videosList==null){
